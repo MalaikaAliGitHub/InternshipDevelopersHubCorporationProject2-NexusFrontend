@@ -14,8 +14,29 @@ export const EntrepreneurProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
   
-  // Fetch entrepreneur data
-  const entrepreneur = findUserById(id || '') as Entrepreneur | null;
+  // Fetch entrepreneur data; if not found and it's the current user, synthesize minimal data from auth user
+  const fetched = findUserById(id || '') as Entrepreneur | null;
+  const entrepreneur: Entrepreneur | null = fetched || (
+    currentUser && id === currentUser.id && currentUser.role === 'entrepreneur'
+      ? {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          role: 'entrepreneur',
+          avatarUrl: currentUser.avatarUrl,
+          bio: currentUser.bio || '',
+          isOnline: true,
+          createdAt: currentUser.createdAt,
+          startupName: `${currentUser.name}'s Startup`,
+          pitchSummary: 'Tell investors about your vision, market, and traction.',
+          fundingNeeded: '$0',
+          industry: 'General',
+          location: '—',
+          foundedYear: new Date().getFullYear(),
+          teamSize: 1,
+        }
+      : null
+  );
   
   if (!entrepreneur || entrepreneur.role !== 'entrepreneur') {
     return (

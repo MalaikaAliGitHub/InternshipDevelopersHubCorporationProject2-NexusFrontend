@@ -13,8 +13,28 @@ export const InvestorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
   
-  // Fetch investor data
-  const investor = findUserById(id || '') as Investor | null;
+  // Fetch investor data; if not found and it's the current user, synthesize minimal data from auth user
+  const fetched = findUserById(id || '') as Investor | null;
+  const investor: Investor | null = fetched || (
+    currentUser && id === currentUser.id && currentUser.role === 'investor'
+      ? {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          role: 'investor',
+          avatarUrl: currentUser.avatarUrl,
+          bio: currentUser.bio || '',
+          isOnline: true,
+          createdAt: currentUser.createdAt,
+          investmentInterests: ['General'],
+          investmentStage: ['Seed'],
+          portfolioCompanies: [],
+          totalInvestments: 0,
+          minimumInvestment: '$0',
+          maximumInvestment: '$0',
+        }
+      : null
+  );
   
   if (!investor || investor.role !== 'investor') {
     return (

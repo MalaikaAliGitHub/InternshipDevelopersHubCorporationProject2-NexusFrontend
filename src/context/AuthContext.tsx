@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, UserRole, AuthContextType } from '../types';
-import { users } from '../data/users';
 import toast from 'react-hot-toast';
 
 // Create Auth Context
@@ -8,7 +7,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Local storage keys
 const USER_STORAGE_KEY = 'business_nexus_user';
-const RESET_TOKEN_KEY = 'business_nexus_reset_token';
+const API_BASE_URL = 'http://localhost:5000';
+
+// Map API user shape to app `User` shape used across the UI
+const mapApiUserToAppUser = (apiUser: any): User => {
+  const fallbackName = apiUser?.profile?.name || (apiUser?.email ? apiUser.email.split('@')[0] : 'User');
+  const name = fallbackName;
+  const avatarSeed = encodeURIComponent(name || 'User');
+  return {
+    id: apiUser.id,
+    name,
+    email: apiUser.email,
+    role: apiUser.role as UserRole,
+    avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${avatarSeed}`,
+    bio: '',
+    isOnline: true,
+    createdAt: new Date().toISOString(),
+  };
+};
 
 // Auth Provider Component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -18,158 +34,134 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check for stored user on initial load
   useEffect(() => {
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
     setIsLoading(false);
   }, []);
 
-  // Mock login function - in a real app, this would make an API call
-  const login = async (email: string, password: string, role: UserRole): Promise<void> => {
+  // Register function
+  const register = async (name: string, email: string, password: string, role: UserRole): Promise<any> => {
     setIsLoading(true);
-    
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Find user with matching email and role
-      const foundUser = users.find(u => u.email === email && u.role === role);
-      
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(foundUser));
-        toast.success('Successfully logged in!');
-      } else {
-        throw new Error('Invalid credentials or user not found');
-      }
-    } catch (error) {
-      toast.error((error as Error).message);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Failed to register');
 
-  // Mock register function - in a real app, this would make an API call
-  const register = async (name: string, email: string, password: string, role: UserRole): Promise<void> => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if email already exists
-      if (users.some(u => u.email === email)) {
-        throw new Error('Email already in use');
-      }
-      
-      // Create new user
-      const newUser: User = {
-        id: `${role[0]}${users.length + 1}`,
-        name,
-        email,
-        role,
-        avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
-        bio: '',
-        isOnline: true,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Add user to mock data
-      users.push(newUser);
-      
-      setUser(newUser);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+      const mappedUser = mapApiUserToAppUser(data.user);
+      setUser(mappedUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mappedUser));
+      localStorage.setItem('token', data.token);
+
       toast.success('Account created successfully!');
-    } catch (error) {
-      toast.error((error as Error).message);
-      throw error;
+      return data;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock forgot password function
-  const forgotPassword = async (email: string): Promise<void> => {
+  // Login function
+  const login = async (email: string, password: string, role: UserRole): Promise<any> => {
+    setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if user exists
-      const user = users.find(u => u.email === email);
-      if (!user) {
-        throw new Error('No account found with this email');
-      }
-      
-      // Generate reset token (in a real app, this would be a secure token)
-      const resetToken = Math.random().toString(36).substring(2, 15);
-      localStorage.setItem(RESET_TOKEN_KEY, resetToken);
-      
-      // In a real app, this would send an email
-      toast.success('Password reset instructions sent to your email');
-    } catch (error) {
-      toast.error((error as Error).message);
-      throw error;
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Failed to login');
+
+      const mappedUser = mapApiUserToAppUser(data.user);
+      setUser(mappedUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mappedUser));
+      localStorage.setItem('token', data.token);
+
+      toast.success('Logged in successfully!');
+      return data;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Mock reset password function
-  const resetPassword = async (token: string, newPassword: string): Promise<void> => {
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Verify token
-      const storedToken = localStorage.getItem(RESET_TOKEN_KEY);
-      if (token !== storedToken) {
-        throw new Error('Invalid or expired reset token');
-      }
-      
-      // In a real app, this would update the user's password in the database
-      localStorage.removeItem(RESET_TOKEN_KEY);
-      toast.success('Password reset successfully');
-    } catch (error) {
-      toast.error((error as Error).message);
-      throw error;
-    }
-  };
-
-  // Logout function
+  // Logout
   const logout = (): void => {
     setUser(null);
     localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem('token');
     toast.success('Logged out successfully');
   };
 
-  // Update user profile
-  const updateProfile = async (userId: string, updates: Partial<User>): Promise<void> => {
+  // Update profile
+  const updateProfile = async (updates: Partial<User>): Promise<void> => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Not authenticated');
+
+    setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update user in mock data
-      const userIndex = users.findIndex(u => u.id === userId);
-      if (userIndex === -1) {
-        throw new Error('User not found');
-      }
-      
-      const updatedUser = { ...users[userIndex], ...updates };
-      users[userIndex] = updatedUser;
-      
-      // Update current user if it's the same user
-      if (user?.id === userId) {
-        setUser(updatedUser);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-      }
-      
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      toast.error((error as Error).message);
-      throw error;
+      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Failed to update profile');
+
+      // Backend returns updated profile. Merge into existing user shape
+      setUser(prev => {
+        if (!prev) return prev;
+        const nextUser: User = { ...prev, name: (data?.name as string) || prev.name };
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
+        return nextUser;
+      });
+      toast.success('Profile updated successfully!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const value = {
+  // Forgot password
+  const forgotPassword = async (email: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Failed to send reset email');
+
+      toast.success('Password reset instructions sent!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Reset password
+  const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Failed to reset password');
+
+      toast.success('Password reset successfully!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const value: AuthContextType = {
     user,
     login,
     register,
@@ -178,17 +170,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetPassword,
     updateProfile,
     isAuthenticated: !!user,
-    isLoading
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook for using auth context
+// Custom hook
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

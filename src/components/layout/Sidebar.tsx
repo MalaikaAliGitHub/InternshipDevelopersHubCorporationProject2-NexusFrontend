@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Home, Building2, CircleDollarSign, Users, MessageCircle, 
-  Bell, FileText, Settings, HelpCircle
+  Bell, FileText, Settings, HelpCircle, Calendar, CreditCard
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -39,19 +39,23 @@ export const Sidebar: React.FC = () => {
   const entrepreneurItems = [
     { to: '/dashboard/entrepreneur', icon: <Home size={20} />, text: 'Dashboard' },
     { to: '/profile/entrepreneur/' + user.id, icon: <Building2 size={20} />, text: 'My Startup' },
+    { to: '/calendar', icon: <Calendar size={20} />, text: 'Calendar' },
     { to: '/investors', icon: <CircleDollarSign size={20} />, text: 'Find Investors' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
     { to: '/documents', icon: <FileText size={20} />, text: 'Documents' },
+    { to: '/payment', icon: <CreditCard size={20} />, text: 'Payment' },
   ];
   
   const investorItems = [
     { to: '/dashboard/investor', icon: <Home size={20} />, text: 'Dashboard' },
     { to: '/profile/investor/' + user.id, icon: <CircleDollarSign size={20} />, text: 'My Portfolio' },
+    { to: '/calendar', icon: <Calendar size={20} />, text: 'Calendar' },
     { to: '/entrepreneurs', icon: <Users size={20} />, text: 'Find Startups' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
     { to: '/deals', icon: <FileText size={20} />, text: 'Deals' },
+    { to: '/payment', icon: <CreditCard size={20} />, text: 'Payment' },
   ];
   
   const sidebarItems = user.role === 'entrepreneur' ? entrepreneurItems : investorItems;

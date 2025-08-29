@@ -70,12 +70,34 @@ export interface Document {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
-  register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string, role: UserRole) => Promise<any>;
+  register: (name: string, email: string, password: string, role: UserRole) => Promise<any>;
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
-  updateProfile: (userId: string, updates: Partial<User>) => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+}
+
+// Calendar / Meetings
+export interface AvailabilitySlot {
+  start: string; // 'HH:mm'
+  end: string;   // 'HH:mm'
+}
+
+export interface AvailabilityDay {
+  date: string; // 'YYYY-MM-DD'
+  slots: AvailabilitySlot[];
+}
+
+export interface Meeting {
+  _id: string;
+  title: string;
+  start: string; // ISO
+  end: string;   // ISO
+  participants: Array<{ id?: string; _id?: string; email?: string; role?: UserRole; profile?: { name?: string } }>;
+  createdBy: string;
+  status: 'scheduled' | 'cancelled' | 'completed';
+  videoLink?: string;
 }
