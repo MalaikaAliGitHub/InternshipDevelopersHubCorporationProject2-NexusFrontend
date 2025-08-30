@@ -7,7 +7,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Local storage keys
 const USER_STORAGE_KEY = 'business_nexus_user';
-const API_BASE_URL = "https://gentle-patience-production.up.railway.app";
+const API_BASE_URL = "https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app";
 
 // Map API user shape to app `User` shape used across the UI
 const mapApiUserToAppUser = (apiUser: any): User => {

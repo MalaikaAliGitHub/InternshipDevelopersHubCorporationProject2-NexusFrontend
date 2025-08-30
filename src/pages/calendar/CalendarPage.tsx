@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
-const API_BASE_URL = "https://gentle-patience-production.up.railway.app";
+const API_BASE_URL = "https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app";
 
 interface AvailabilitySlot { start: string; end: string; }
 interface AvailabilityDay { date: string; slots: AvailabilitySlot[]; }

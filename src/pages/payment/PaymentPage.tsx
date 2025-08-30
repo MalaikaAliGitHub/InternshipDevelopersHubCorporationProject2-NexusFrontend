@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 
-const API_BASE_URL = 'http://localhost:5000/api/payment';
+const API_BASE_URL = "https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app";
 
 type InitiateResponse = {
   message: string;
