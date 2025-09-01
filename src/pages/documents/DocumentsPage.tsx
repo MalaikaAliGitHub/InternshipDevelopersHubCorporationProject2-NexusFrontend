@@ -6,7 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import SignatureCanvas from 'react-signature-canvas';
 import { useAuth } from '../../context/AuthContext';
 
-const API_BASE = 'http://localhost:5000/api/documents';
+const API_BASE = 'https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app/api/documents';
 
 type DocInfo = {
   id?: string;
@@ -76,7 +76,7 @@ export const DocumentsPage: React.FC = () => {
       if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed');
 
       setDocumentId(data.documentId);
-      setFileUrl(`http://localhost:5000${data.fileUrl}`);
+      setFileUrl(`https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app${data.fileUrl}`);
       setStatus('pending');
 
       await fetchDocs();
@@ -104,9 +104,9 @@ export const DocumentsPage: React.FC = () => {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Sign failed');
 
-      setSignedUrl(`http://localhost:5000${data.fileUrl}`);
+      setSignedUrl(`https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app${data.fileUrl}`);
       setStatus('signed');
-      setFileUrl(`http://localhost:5000${data.fileUrl}`); // update preview with signed file
+      setFileUrl(`https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app${data.fileUrl}`); // update preview with signed file
       await fetchDocs();
     } catch (err) {
       console.error(err);
@@ -237,11 +237,11 @@ export const DocumentsPage: React.FC = () => {
                       <Badge variant={d.status === 'signed' ? 'success' : 'secondary'}>{d.status}</Badge>
                     </div>
                     <div className="flex gap-2">
-                      <a href={`http://localhost:5000${d.fileUrl}`} target="_blank" rel="noreferrer">
+                      <a href={`https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app${d.fileUrl}`} target="_blank" rel="noreferrer">
                         View
                       </a>
                       {d.signedUrl && (
-                        <a href={`http://localhost:5000${d.signedUrl}`} target="_blank" rel="noreferrer">
+                        <a href={`https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app${d.signedUrl}`} target="_blank" rel="noreferrer">
                           Download signed
                         </a>
                       )}

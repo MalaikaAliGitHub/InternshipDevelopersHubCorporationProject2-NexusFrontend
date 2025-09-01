@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api/payment',
+  baseURL: 'https://internshipdevelopershubcorporationproject2-nexus-production.up.railway.app/api/payment',
   withCredentials: true // if your backend uses cookies; otherwise optional
 });
 
